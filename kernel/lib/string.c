@@ -2,6 +2,7 @@
    kernel/lib/string.c — Manipulação de memória e strings (bare-metal)
    (sem dependência de libc)
    ============================================================ */
+#include <string.h>
 #include <stddef.h>
 #include <stdint.h>
 

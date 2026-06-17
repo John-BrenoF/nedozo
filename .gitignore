@@ -2,3 +2,5 @@ build/
 *.bin
 *.iso
 *.o
+/tolls
+/starll.sh

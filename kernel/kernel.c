@@ -1,19 +1,20 @@
-/* ============================================================
-   kernel/kernel.c — Inicialização e Loop Principal
-   ============================================================ */
+/* kernel/kernel.c — Inicialização e Loop Principal*/
+
 #include <stdint.h>
-#include "include/drivers/vga.h"
-#include "include/arch/gdt.h"
-#include "include/arch/idt.h"
-#include "include/mm/pmm.h"
-#include "include/mm/vmm.h"
-#include "include/mm/heap.h"
+#include <drivers/vga.h>
+#include <arch/gdt.h>
+#include <arch/idt.h>
+#include <mm/pmm.h>
+#include <mm/vmm.h>
+#include <mm/heap.h>
 
 /* Endereço e tamanho do heap do kernel (ajuste conforme necessário) */
 #define HEAP_START  0x500000    /* 5 MB */
 #define HEAP_SIZE   (1024*1024) /* 1 MB  */
 
 void kernel_main(uint32_t magic, void *mboot_info) {
+    __asm__ volatile ("cli"); // Segurança extra: garante interrupções desligadas
+
     (void)magic;
     (void)mboot_info;
 

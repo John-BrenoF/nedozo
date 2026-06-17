@@ -3,8 +3,10 @@
    Configura diretório e tabelas de página (Paging de 2 níveis).
    Endereço: [31..22] Directory Index | [21..12] Table Index | [11..0] Offset
    ============================================================ */
-#include "include/mm/vmm.h"
-#include "include/mm/pmm.h"
+#include <stdint.h>
+#include <stddef.h>
+#include <mm/vmm.h>
+#include <mm/pmm.h>
 #include <string.h>
 
 /* Tabelas de 1024 entradas (cada entrada 32 bits = 4 bytes) */
@@ -17,26 +19,39 @@ static uint32_t page_directory[PD_ENTRIES] __attribute__((aligned(4096)));
 void vmm_init(void) {
     memset(page_directory, 0, sizeof(page_directory));
 
-    /* Mapeamento Identidade (Virtual = Físico) dos primeiros 4 MB para o Kernel */
-    uint32_t *pt = (uint32_t *)pmm_alloc_page();
-    memset(pt, 0, PAGE_SIZE);
-
-    for (uint32_t i = 0; i < PT_ENTRIES; i++) {
-        pt[i] = (i * PAGE_SIZE) | PAGE_PRESENT | PAGE_WRITABLE;
+    /* Mapeamento Identidade (Virtual = Físico) dos primeiros 16 MB */
+    /* Aumentamos para 16MB para garantir que as tabelas de página alocadas pelo PMM caibam aqui */
+    for (uint32_t j = 0; j < 4; j++) {
+        uint32_t *pt = (uint32_t *)pmm_alloc_page();
+        memset(pt, 0, PAGE_SIZE);
+        for (uint32_t i = 0; i < PT_ENTRIES; i++) {
+            pt[i] = ((j * 0x400000) + (i * PAGE_SIZE)) | PAGE_PRESENT | PAGE_WRITABLE;
+        }
+        page_directory[j] = (uint32_t)pt | PAGE_PRESENT | PAGE_WRITABLE;
     }
-    /* Insere a Page Table na primeira entrada do Page Directory */
-    page_directory[0] = (uint32_t)pt | PAGE_PRESENT | PAGE_WRITABLE;
 
-    /* Ativação da paginação via registradores de controle (CR3 e CR0) */
+
+    /* Mapeamento Identidade (Virtual = Físico) dos primeiros 16 MB para segurança */
+    for (uint32_t j = 1; j < 4; j++) {
+        uint32_t *new_pt = (uint32_t *)pmm_alloc_page();
+        memset(new_pt, 0, PAGE_SIZE);
+        for (uint32_t i = 0; i < PT_ENTRIES; i++) {
+            new_pt[i] = ((j * 0x400000) + (i * PAGE_SIZE)) | PAGE_PRESENT | PAGE_WRITABLE;
+        }
+        page_directory[j] = (uint32_t)new_pt | PAGE_PRESENT | PAGE_WRITABLE;
+    }
+
+    /* Ativação ultra-segura: usa EAX para CR3 e CR0 */
     __asm__ volatile (
-        "mov %0, %%cr3\n"          /* Define endereço do PD */
-        "mov %%cr0, %%eax\n"       
-        "or  $0x80000000, %%eax\n" /* Ativa o bit de Paging (PG) */
+        "mov %0, %%cr3\n"
+        "mov %%cr0, %%eax\n"
+        "or $0x80010000, %%eax\n"
         "mov %%eax, %%cr0\n"
-        : : "r"(page_directory) : "eax"
+        "jmp 1f\n"
+        "1:\n"
+        : : "r"(page_directory) : "eax", "memory"
     );
 }
-
 void vmm_map_page(uint32_t virt, uint32_t phys, uint32_t flags) {
     uint32_t pd_idx = virt >> 22;           /* 10 bits superiores */
     uint32_t pt_idx = (virt >> 12) & 0x3FF; /* 10 bits intermediários */

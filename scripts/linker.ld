@@ -5,6 +5,12 @@
 ENTRY(_start)
 
 SECTIONS {
+    /* Descarta seções que podem interferir com o cabeçalho Multiboot no ELF */
+    /DISCARD/ : {
+        *(.note.gnu.property)
+        *(.comment)
+    }
+
     /* O kernel começa a ser carregado em 1 MB físico */
     . = 0x100000;
 
@@ -22,7 +28,9 @@ SECTIONS {
     }
 
     .bss ALIGN(4096) : {
+        _bss_start = .;
         *(COMMON)
         *(.bss*)
+        _bss_end = .;
     }
 }

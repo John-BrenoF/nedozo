@@ -11,11 +11,15 @@ AS      := nasm
 LD      := ld
 QEMU    := qemu-system-i386
 
+# Tenta recuperar o diretório de headers internos do GCC para tipos básicos (stdint.h, etc)
+CC_INTERNAL_INC := $(shell $(CC) -m32 -print-file-name=include 2>/dev/null)
+
 CFLAGS  := -m32 -std=c11 -ffreestanding -O2 -Wall -Wextra \
-            -fno-stack-protector -fno-pie -fno-PIC \
-            -nostdinc -I.
+            -fno-stack-protector -fno-pie -fno-PIC -fno-stack-check \
+            -mno-sse -mno-mmx -mno-sse2 -fcf-protection=none \
+            -nostdinc -isystem "$(CC_INTERNAL_INC)" -Iinclude
 ASFLAGS := -f elf32
-LDFLAGS := -m elf_i386 -T scripts/linker.ld --oformat=binary
+LDFLAGS := -m elf_i386 -T scripts/linker.ld -z max-page-size=0x1000
 
 C_SRCS  := kernel/kernel.c \
             kernel/arch/x86/gdt.c \
@@ -51,7 +55,7 @@ build/%.o: %.asm
 	$(AS) $(ASFLAGS) $< -o $@
 
 run: $(KERNEL)
-	$(QEMU) -kernel $(KERNEL) -m 32M
+	$(QEMU) -kernel $(KERNEL) -m 32M -display gtk
 
 clean:
 	rm -rf build

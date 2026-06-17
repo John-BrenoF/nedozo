@@ -1,7 +1,9 @@
 /* ============================================================
    kernel/arch/x86/idt.c — Implementação da IDT
    ============================================================ */
-#include "include/arch/idt.h"
+#include <stdint.h>
+#include <stddef.h>
+#include <arch/idt.h>
 #include <string.h>
 
 /* A x86 suporta 256 vetores de interrupção */
@@ -13,8 +15,8 @@ static idt_ptr_t   idt_ptr;
 extern void idt_flush(uint32_t); /* Definido em idt_flush.asm */
 
 /* Preenche os campos de uma entrada da IDT */
-static void idt_set_gate(uint8_t n, uint32_t base,
-                          uint16_t sel, uint8_t flags) {
+void idt_set_gate(uint8_t n, uint32_t base,
+                  uint16_t sel, uint8_t flags) {
     idt[n].base_low  = base & 0xFFFF;
     idt[n].base_high = (base >> 16) & 0xFFFF;
     idt[n].selector  = sel;

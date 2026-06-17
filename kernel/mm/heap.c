@@ -2,7 +2,8 @@
    kernel/mm/heap.c — Alocador de heap simples (first-fit)
    Cada bloco tem um cabeçalho com: tamanho + flag livre/usado.
    ============================================================ */
-#include "include/mm/heap.h"
+#include <mm/heap.h>
+#include <stddef.h>
 #include <stdint.h>
 
 #define HEADER_SIZE sizeof(block_hdr_t)

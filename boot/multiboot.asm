@@ -26,17 +26,34 @@ stack_top:
 section .text
 global _start
 extern kernel_main      ; Ponto de entrada definido em C
-
+extern _bss_start       ; Definido no linker script
+extern _bss_end         ; Definido no linker script
 
 _start:
-  ; Configura o ponteiro da pilha
+    cli
+    cld                 ; Garante que operações de string (rep) incrementem o endereço
+
+    ; Salva registros do Multiboot antes de limpar o BSS
+    push ebx
+    push eax
+
+    mov edi, _bss_start
+    xor eax, eax
+    mov ecx, _bss_end
+    sub ecx, edi
+    rep stosb
+
+    ; Restaura registros e configura pilha
+    pop eax
+    pop ebx
+    xor  ebp, ebp       ; Reseta o frame pointer (boa prática)
     mov  esp, stack_top
     push ebx            ; ponteiro para info Multiboot (mmap)
     push eax            ; magic number do Multiboot
     call kernel_main
 
     ; Desabilita interrupções e trava o processador se o kernel retornar
-    cli                     
-
+    cli
+.hang:
     hlt                 ; Para a execução até a próxima interrupção (que não virá)
     jmp .hang           ; Loop de segurança

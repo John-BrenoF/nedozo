@@ -3,7 +3,9 @@
    Cada bit representa uma página de 4 KB.
    bit = 0 → livre | bit = 1 → ocupada
    ============================================================ */
-#include "include/mm/pmm.h"
+#include <stdint.h>
+#include <stddef.h>
+#include <mm/pmm.h>
 #include <string.h>
 
 /* O bitmap é um array de inteiros tratando bits individuais */

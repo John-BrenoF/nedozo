@@ -4,8 +4,6 @@
 #ifndef DRIVERS_VGA_H
 #define DRIVERS_VGA_H
 
-#include <stdint.h>
-
 typedef enum {
     VGA_BLACK = 0, VGA_BLUE, VGA_GREEN, VGA_CYAN,
     VGA_RED, VGA_MAGENTA, VGA_BROWN, VGA_LIGHT_GREY,

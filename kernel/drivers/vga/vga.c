@@ -3,9 +3,10 @@
    O buffer de memória mapeada começa em 0xB8000.
    Cada caractere ocupa 2 bytes: [Cores(8)] [Caractere(8)]
    ============================================================ */
-#include "include/drivers/vga.h"
-#include "include/arch/io.h"
+#include <drivers/vga.h>
+#include <arch/io.h>
 #include <stdarg.h>
+#include <stddef.h>
 #include <stdint.h>
 
 #define VGA_WIDTH  80
@@ -20,18 +21,18 @@ static inline uint16_t make_entry(char c, uint8_t color) {
     return (uint16_t)c | ((uint16_t)color << 8);
 }
 
+void vga_clear(void) {
+    for (int i = 0; i < VGA_WIDTH * VGA_HEIGHT; i++)
+        vga_buf[i] = make_entry(' ', cur_color);
+    cur_row = cur_col = 0;
+}
+
 void vga_init(void) {
     vga_buf   = VGA_ADDR;
     cur_row   = 0;
     cur_col   = 0;
     cur_color = (VGA_BLACK << 4) | VGA_LIGHT_GREY;
     vga_clear();
-}
-
-void vga_clear(void) {
-    for (int i = 0; i < VGA_WIDTH * VGA_HEIGHT; i++)
-        vga_buf[i] = make_entry(' ', cur_color);
-    cur_row = cur_col = 0;
 }
 
 void vga_set_color(vga_color_t fg, vga_color_t bg) {
@@ -85,7 +86,16 @@ void kprintf(const char *fmt, ...) {
         switch (*fmt) {
             case 's': vga_puts(va_arg(ap, const char *)); break;
             case 'c': vga_putchar((char)va_arg(ap, int)); break;
-            case 'd': case 'u': {
+            case 'd': {
+                int32_t n = va_arg(ap, int32_t);
+                int i = 0;
+                if (n < 0) { vga_putchar('-'); n = -n; }
+                if (n == 0) { buf[i++] = '0'; }
+                else { while (n) { buf[i++] = '0' + n%10; n /= 10; } }
+                while (i--) vga_putchar(buf[i]);
+                break;
+            }
+            case 'u': {
                 uint32_t n = va_arg(ap, uint32_t);
                 int i = 0;
                 if (n == 0) { buf[i++] = '0'; }

@@ -1,7 +1,9 @@
 /* ============================================================
    kernel/arch/x86/gdt.c — Implementação da Global Descriptor Table
    ============================================================ */
-#include "include/arch/gdt.h"
+#include <stdint.h>
+#include <stddef.h>
+#include <arch/gdt.h>
 
 /* Definimos 3 entradas: Nula, Código Kernel, Dados Kernel */
 #define GDT_ENTRIES 3
