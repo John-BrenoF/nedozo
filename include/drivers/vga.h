@@ -9,7 +9,7 @@ typedef enum {
     VGA_RED, VGA_MAGENTA, VGA_BROWN, VGA_LIGHT_GREY,
     VGA_DARK_GREY, VGA_LIGHT_BLUE, VGA_LIGHT_GREEN,
     VGA_LIGHT_CYAN, VGA_LIGHT_RED, VGA_LIGHT_MAGENTA,
-    VGA_LIGHT_BROWN, VGA_WHITE
+    VGA_YELLOW, VGA_WHITE
 } vga_color_t;
 
 /* Inicializa posição, limpa tela e configura buffer em 0xB8000 */

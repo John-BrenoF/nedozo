@@ -14,11 +14,13 @@
 #define PMM_BITMAP_ADDR 0x20000   
 
 /* Inicializa o gerenciador com a memória disponível em KB */
-void pmm_init(uint32_t mem_size_kb);
+/* Agora aceita o ponteiro da estrutura Multiboot para detectar a RAM real */
+void pmm_init(void *mboot_ptr);
 
 uint32_t pmm_alloc_page(void);      /* Aloca uma página física e retorna seu endereço */
 void     pmm_free_page(uint32_t addr); /* Libera uma página dado seu endereço */
 
 uint32_t pmm_free_pages_count(void); /* Retorna o número de páginas livres */
+uint32_t pmm_total_pages_count(void); /* Retorna o total de páginas detectadas */
 
 #endif /* MM_PMM_H */

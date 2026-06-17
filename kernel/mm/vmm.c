@@ -19,8 +19,8 @@ static uint32_t page_directory[PD_ENTRIES] __attribute__((aligned(4096)));
 void vmm_init(void) {
     memset(page_directory, 0, sizeof(page_directory));
 
-    /* Mapeamento Identidade (Virtual = Físico) dos primeiros 16 MB */
-    /* Aumentamos para 16MB para garantir que as tabelas de página alocadas pelo PMM caibam aqui */
+    /* Mapeamento Identidade (Virtual = Físico) dos primeiros 16 MB para segurança */
+    /* Isso garante que o Kernel (1MB), o Heap (5MB) e as tabelas de página estejam acessíveis */
     for (uint32_t j = 0; j < 4; j++) {
         uint32_t *pt = (uint32_t *)pmm_alloc_page();
         memset(pt, 0, PAGE_SIZE);
@@ -28,17 +28,6 @@ void vmm_init(void) {
             pt[i] = ((j * 0x400000) + (i * PAGE_SIZE)) | PAGE_PRESENT | PAGE_WRITABLE;
         }
         page_directory[j] = (uint32_t)pt | PAGE_PRESENT | PAGE_WRITABLE;
-    }
-
-
-    /* Mapeamento Identidade (Virtual = Físico) dos primeiros 16 MB para segurança */
-    for (uint32_t j = 1; j < 4; j++) {
-        uint32_t *new_pt = (uint32_t *)pmm_alloc_page();
-        memset(new_pt, 0, PAGE_SIZE);
-        for (uint32_t i = 0; i < PT_ENTRIES; i++) {
-            new_pt[i] = ((j * 0x400000) + (i * PAGE_SIZE)) | PAGE_PRESENT | PAGE_WRITABLE;
-        }
-        page_directory[j] = (uint32_t)new_pt | PAGE_PRESENT | PAGE_WRITABLE;
     }
 
     /* Ativação ultra-segura: usa EAX para CR3 e CR0 */

@@ -22,4 +22,7 @@ void *kmalloc(size_t size);
 /* Libera a memória previamente alocada */
 void  kfree(void *ptr);
 
+/* Exibe o status das zonas de memória */
+void heap_dump_stats(void);
+
 #endif /* MM_HEAP_H */
